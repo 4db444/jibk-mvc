@@ -16,5 +16,3 @@
             return self::$instance->connection;
         }
     }
-
-    Database::get_instance();
