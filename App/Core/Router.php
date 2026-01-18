@@ -1,6 +1,8 @@
 <?php
     namespace App\Core;
 
+    use ReflectionMethod;
+
     class Router {
         private static array $routes = [
             "GET" => [],
@@ -33,7 +35,27 @@
                 $controller = new $action[0]();
                 $method = $action[1];
 
-                call_user_func_array([$controller, $method], []);
+                $reflection = new ReflectionMethod($controller, $method);
+
+                $parameters = $reflection->getParameters();
+
+                $args = [];
+
+                foreach ($parameters as $param){
+                    $name = $param->getName();
+
+                    if(isset($_POST[$name])){
+                        $args[] = $_POST[$name];
+                    }else if ($param->isDefaultValueAvailable()){
+                        $args[] = getDefaultValue();
+                    }else {
+                        echo "missing param : {$name}";
+                        return;
+                    }
+
+                };
+
+                $reflection->invokeArgs($controller, $args);
             }else {
                 echo "not found";
             }
